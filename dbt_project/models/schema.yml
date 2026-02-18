@@ -1,0 +1,65 @@
+version: 2
+
+models:
+  - name: stg_covid_surveillance
+    description: Cleaned CDC PLACES county health data with standardized naming
+    columns:
+      - name: state_code
+        description: State abbreviation
+        tests:
+          - not_null
+      - name: county_name
+        description: County name
+        tests:
+          - not_null
+      - name: data_year
+        description: Year of health data
+        tests:
+          - not_null
+      - name: pct_diabetes
+        description: Diabetes prevalence (%)
+      - name: pct_obesity
+        description: Obesity prevalence (%)
+
+  - name: stg_flu_surveillance
+    description: Health measures unpivoted for measure-based analysis
+
+  - name: int_weekly_covid_aggregates
+    description: County health rankings within state with deviations
+    columns:
+      - name: state_code
+        tests:
+          - not_null
+      - name: county_name
+        tests:
+          - not_null
+      - name: health_burden_score
+        description: Combined deviation from state averages
+
+  - name: int_state_covid_trends
+    description: State-level health profiles and disparities
+    columns:
+      - name: state_code
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA', 'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD', 'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ', 'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC', 'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY', 'DC']
+
+  - name: mart_disease_trends
+    description: Final analytical County health profiles with flags and burden scores
+    columns:
+      - name: state_code
+        tests:
+          - not_null
+      - name: county_fips
+        tests:
+          - not_null
+      - name: data_year
+        tests:
+          - not_null
+      - name: health_burden_score
+        description: Higher score = more health disparities from state average
+      - name: data_quality_status
+        tests:
+          - accepted_values:
+              values: ['Valid', 'Incomplete Data', 'Small Population']

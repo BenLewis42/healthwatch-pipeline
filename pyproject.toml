@@ -1,0 +1,52 @@
+[tool.poetry]
+name = "cdc-surveillance-pipeline"
+version = "0.1.0"
+description = "End-to-end CDC surveillance data pipeline with dbt, DuckDB, and Streamlit"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.31.0"
+pandas = "^2.1.0"
+duckdb = "^0.9.0"
+python-dotenv = "^1.0.0"
+dbt-duckdb = "^1.7.0"
+streamlit = "^1.28.0"
+plotly = "^5.17.0"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+black = "^23.11.0"
+ruff = "^0.1.6"
+mypy = "^1.7.0"
+pre-commit = "^3.5.0"
+pydantic = "^2.5.0"
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "--cov=src --cov-report=term-missing"

@@ -1,0 +1,37 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw CDC PLACES county health data from Socrata API
+    tables:
+      - name: places_county
+        description: |
+          CDC PLACES county-level health data with 36+ health measures.
+          Each row represents one county with prevalence estimates for:
+          - Health insurance access
+          - Chronic disease prevention and prevalence
+          - Health behaviors (smoking, binge drinking, obesity)
+          - Disabilities and health limitations
+        columns:
+          - name: stateabbr
+            description: State abbreviation (e.g., WI, MN)
+          - name: statedesc
+            description: Full state name
+          - name: countyname
+            description: County name
+          - name: countyfips
+            description: County FIPS code
+          - name: year
+            description: Data year
+          - name: totalpopulation
+            description: Total county population
+          - name: access2_crudeprev
+            description: Crude prevalence of no health insurance (%)
+          - name: diabetes_crudeprev
+            description: Crude prevalence of diabetes (%)
+          - name: obesity_crudeprev
+            description: Crude prevalence of obesity (%)
+          - name: csmoking_crudeprev
+            description: Crude prevalence of current smoking (%)
+          - name: chd_crudeprev
+            description: Crude prevalence of coronary heart disease (%)
