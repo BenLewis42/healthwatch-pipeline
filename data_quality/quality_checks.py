@@ -8,10 +8,14 @@ import json
 import logging
 from datetime import datetime, timedelta
 from pathlib import Path
+import sys
 
 import duckdb
 
-from ..utils.logging_config import setup_logging, get_logger
+# Add src to path for imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+from src.utils.logging_config import setup_logging, get_logger
 
 logger = get_logger(__name__)
 setup_logging()
@@ -50,9 +54,7 @@ class DataQualityChecker:
         try:
             result = self.conn.execute(
                 """
-                SELECT MAX(loaded_at) as last_load FROM raw.covid_surveillance
-                UNION ALL
-                SELECT MAX(loaded_at) FROM raw.flu_surveillance
+                SELECT MAX(loaded_at) as last_load FROM raw.places_county
                 """
             ).fetchall()
 
@@ -93,23 +95,17 @@ class DataQualityChecker:
             dict: Check result with record counts
         """
         try:
-            covid_count = self.conn.execute(
-                "SELECT COUNT(*) FROM raw.covid_surveillance"
-            ).fetchall()[0][0]
-            flu_count = self.conn.execute(
-                "SELECT COUNT(*) FROM raw.flu_surveillance"
+            places_count = self.conn.execute(
+                "SELECT COUNT(*) FROM raw.places_county"
             ).fetchall()[0][0]
 
-            total = covid_count + flu_count
-
-            if total > 0:
+            if places_count > 0:
                 self.checks_passed += 1
                 return {
                     "name": "Record Counts",
                     "status": "PASS",
-                    "covid_records": covid_count,
-                    "flu_records": flu_count,
-                    "total_records": total,
+                    "places_records": places_count,
+                    "total_records": places_count,
                 }
             else:
                 self.checks_failed += 1
@@ -132,23 +128,25 @@ class DataQualityChecker:
             dict: Check result with null value counts
         """
         try:
-            # Check COVID data
-            covid_nulls = self.conn.execute(
+            # Check PLACES data for critical nulls
+            places_nulls = self.conn.execute(
                 """
                 SELECT
-                    SUM(CASE WHEN state IS NULL THEN 1 ELSE 0 END) as null_states,
-                    SUM(CASE WHEN date IS NULL THEN 1 ELSE 0 END) as null_dates
-                FROM raw.covid_surveillance
+                    SUM(CASE WHEN stateabbr IS NULL THEN 1 ELSE 0 END) as null_states,
+                    SUM(CASE WHEN countyname IS NULL THEN 1 ELSE 0 END) as null_counties,
+                    SUM(CASE WHEN diabetes_crudeprev IS NULL OR diabetes_crudeprev = '' THEN 1 ELSE 0 END) as null_diabetes
+                FROM raw.places_county
                 """
             ).fetchall()[0]
 
-            if covid_nulls[0] == 0 and covid_nulls[1] == 0:
+            if places_nulls[0] == 0 and places_nulls[1] == 0:
                 self.checks_passed += 1
                 return {
                     "name": "Null Values Check",
                     "status": "PASS",
-                    "covid_null_states": int(covid_nulls[0]),
-                    "covid_null_dates": int(covid_nulls[1]),
+                    "null_states": int(places_nulls[0]),
+                    "null_counties": int(places_nulls[1]),
+                    "null_diabetes": int(places_nulls[2]),
                 }
             else:
                 self.checks_failed += 1
@@ -166,7 +164,7 @@ class DataQualityChecker:
 
     def check_date_ranges(self) -> dict:
         """
-        Verify dates are within expected ranges.
+        Verify load dates are recent.
 
         Returns:
             dict: Check result with date statistics
@@ -175,20 +173,23 @@ class DataQualityChecker:
             date_stats = self.conn.execute(
                 """
                 SELECT
-                    MIN(date) as min_date,
-                    MAX(date) as max_date,
-                    COUNT(DISTINCT date) as distinct_dates
-                FROM raw.covid_surveillance
-                WHERE date IS NOT NULL
+                    MIN(loaded_at) as min_load,
+                    MAX(loaded_at) as max_load,
+                    COUNT(DISTINCT DATE(loaded_at)) as distinct_load_dates
+                FROM raw.places_county
+                WHERE loaded_at IS NOT NULL
                 """
             ).fetchall()[0]
 
             min_date, max_date, distinct_dates = date_stats
 
-            # Check if dates are reasonable (within last 2 years)
+            # Check if data was loaded recently
             if min_date and max_date:
-                is_recent = (datetime.now().date() - max_date).days < 365
-                self.checks_passed += 1 if is_recent else self.checks_failed + 1
+                is_recent = (datetime.now() - max_date).days < 7
+                if is_recent:
+                    self.checks_passed += 1
+                else:
+                    self.checks_failed += 1
 
                 return {
                     "name": "Date Range Check",
@@ -261,12 +262,12 @@ class DataQualityChecker:
         print("=" * 60)
         print(f"Timestamp: {self.results['timestamp']}")
         print(f"\nSummary: {self.results['summary']['status']}")
-        print(f"  ✓ Passed: {self.results['summary']['passed']}")
-        print(f"  ✗ Failed: {self.results['summary']['failed']}")
+        print(f"  [+] Passed: {self.results['summary']['passed']}")
+        print(f"  [-] Failed: {self.results['summary']['failed']}")
         print()
 
         for check in self.results["checks"]:
-            status_symbol = "✓" if check["status"] == "PASS" else "✗"
+            status_symbol = "[+]" if check["status"] == "PASS" else "[-]"
             print(f"{status_symbol} {check['name']}: {check['status']}")
             for key, value in check.items():
                 if key not in ["name", "status"]:

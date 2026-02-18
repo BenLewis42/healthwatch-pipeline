@@ -1,0 +1,37 @@
+{
+  "timestamp": "2026-02-18T09:42:18.913143",
+  "checks": [
+    {
+      "name": "Data Freshness",
+      "status": "PASS",
+      "last_load": "2026-02-18 09:33:02.350156",
+      "hours_old": 0.15
+    },
+    {
+      "name": "Record Counts",
+      "status": "PASS",
+      "places_records": 3144,
+      "total_records": 3144
+    },
+    {
+      "name": "Null Values Check",
+      "status": "PASS",
+      "null_states": 0,
+      "null_counties": 0,
+      "null_diabetes": 0
+    },
+    {
+      "name": "Date Range Check",
+      "status": "PASS",
+      "min_date": "2026-02-18 09:33:02.350156",
+      "max_date": "2026-02-18 09:33:02.350156",
+      "distinct_dates": 1
+    }
+  ],
+  "summary": {
+    "total_checks": 4,
+    "passed": 4,
+    "failed": 0,
+    "status": "PASS"
+  }
+}
