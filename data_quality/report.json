@@ -1,17 +1,17 @@
 {
-  "timestamp": "2026-02-27T13:20:41.425003",
+  "timestamp": "2026-02-27T13:25:20.379584",
   "checks": [
     {
       "name": "Data Freshness",
       "status": "PASS",
-      "last_load": "2026-02-27 13:20:32.715162",
+      "last_load": "2026-02-27 13:25:11.743049",
       "hours_old": 0.0
     },
     {
       "name": "Record Counts",
       "status": "PASS",
-      "places_records": 25152,
-      "total_records": 25152
+      "places_records": 37728,
+      "total_records": 37728
     },
     {
       "name": "Null Values Check",
@@ -24,7 +24,7 @@
       "name": "Date Range Check",
       "status": "PASS",
       "min_date": "2026-02-18 09:33:02.350156",
-      "max_date": "2026-02-27 13:20:32.715162",
+      "max_date": "2026-02-27 13:25:11.743049",
       "distinct_dates": 2
     }
   ],

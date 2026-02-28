@@ -12,10 +12,6 @@ models:
         description: County name
         tests:
           - not_null
-      - name: data_year
-        description: Year of health data
-        tests:
-          - not_null
       - name: pct_diabetes
         description: Diabetes prevalence (%)
       - name: pct_obesity
@@ -52,9 +48,6 @@ models:
         tests:
           - not_null
       - name: county_fips
-        tests:
-          - not_null
-      - name: data_year
         tests:
           - not_null
       - name: health_burden_score
