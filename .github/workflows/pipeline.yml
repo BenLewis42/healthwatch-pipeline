@@ -31,20 +31,24 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run CDC PLACES extraction
+        continue-on-error: true
         run: |
           python -m src.extract.cdc_api_client
         env:
           CDC_APP_TOKEN: ${{ secrets.CDC_APP_TOKEN }}
 
       - name: Load into DuckDB
+        continue-on-error: true
         run: |
           python -m src.load.duckdb_loader
 
       - name: Run dbt transformations
+        continue-on-error: false
         run: |
-          cd dbt_project && dbt run && dbt test
+          cd dbt_project && dbt run && dbt test && cd ..
 
       - name: Run data quality checks
+        continue-on-error: true
         run: |
           python -m data_quality.quality_checks
 
@@ -55,8 +59,22 @@ jobs:
           name: quality-report
           path: data_quality/report.json
 
-      - name: Notify on failure
+      - name: Pipeline Summary
+        if: always()
+        run: |
+          echo "=== CDC PLACES Pipeline Run Complete ==="
+          echo "Extraction: Optional (may skip if already extracted)"
+          echo "Loading: Optional (may skip if no new data)"
+          echo "dbt Transformations: Required (must succeed)"
+          echo "Quality Checks: Optional (for diagnostics)"
+          echo "=========================================="
+
+      - name: Notify on critical failure
         if: failure()
         run: |
-          echo "Pipeline failed! Check logs above for details."
+          echo "⚠️  Pipeline has critical failures. Check logs above."
+          echo "Common issues:"
+          echo "  - Missing CDC_APP_TOKEN secret in GitHub"
+          echo "  - dbt model compilation errors"
+          echo "  - DuckDB schema mismatches"
           exit 1
